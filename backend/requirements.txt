@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+pdfplumber
+sentence-transformers
+scikit-learn
+python-multipart
+structlog
+pydantic-settings
+pytest
+httpx
