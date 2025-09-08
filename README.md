@@ -14,12 +14,7 @@
 
 ---
 
-## 🚀 Live Demo
 
-- **Backend:** `[Render URL here]/health`
-- **Frontend:** `[Vercel URL here]`
-
----
 
 ## 🏁 Quickstart
 
