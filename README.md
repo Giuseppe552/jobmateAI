@@ -1,3 +1,6 @@
+
+ <img src="screenshot.png" alt="JobMateAI demo image" width="80%">
+
 # JobMateAI
 
 [![CI](https://github.com/Giuseppe552/jobmateAI/actions/workflows/ci.yml/badge.svg)](https://github.com/Giuseppe552/jobmateAI/actions/workflows/ci.yml)
