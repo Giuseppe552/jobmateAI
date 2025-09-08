@@ -15,7 +15,7 @@
 ---
 
 ## 🏁 Quickstart
-
+ 
 ### Backend (FastAPI)
 ```bash
 git clone https://github.com/Giuseppe552/jobmateAI.git
