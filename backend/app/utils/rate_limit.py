@@ -36,6 +36,9 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         self.bucket = TokenBucket(rate)
 
     async def dispatch(self, request: Request, call_next):
+        # Always allow /health endpoint
+        if request.url.path == "/health":
+            return await call_next(request)
         ip = request.client.host
         if not self.bucket.allow(ip):
             return JSONResponse({"detail": "Rate limit exceeded"}, status_code=429)
