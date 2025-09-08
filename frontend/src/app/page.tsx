@@ -12,25 +12,37 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  async function analyze() {
-    setLoading(true);
-    setResult(null);
+  const [err, setErr] = useState<string|null>(null);
+  const [res, setRes] = useState<any>(null);
+
+  async function warmup(): Promise<void> {
     try {
-      const r = await axios.post(`${API}/score`, { cv_text: cv, jd_text: jd });
-      setResult(r.data);
-    } catch (err: any) {
-      let errorMsg = "Unknown error occurred.";
-      if (err.response) {
-        errorMsg = `API Error: ${err.response.status} ${err.response.statusText}`;
-        if (err.response.data && err.response.data.detail) {
-          errorMsg += `\n${err.response.data.detail}`;
-        }
-      } else if (err.message) {
-        errorMsg = err.message;
-      }
-      setResult({ error: errorMsg });
+      await axios.get(`${API}/health`, { timeout: 70000 });
+    } catch { /* ignore */ }
+  }
+
+  async function analyze() {
+    if (!cv.trim() || !jd.trim()) return;
+    setLoading(true); setErr(null); setRes(null);
+    try {
+      if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set");
+      await warmup();
+      const attempt = () => axios.post(
+        `${API}/score`,
+        { cv_text: cv, jd_text: jd },
+        { timeout: 70000 }
+      );
+      let r;
+      try { r = await attempt(); }
+      catch { await new Promise(res => setTimeout(res, 1200)); r = await attempt(); }
+      setRes(r.data);
+    } catch (e: any) {
+      const status = e?.response?.status;
+      const detail = e?.response?.data?.detail;
+      setErr(status ? `HTTP ${status} — ${detail || "Backend error"}` : (e?.message || "Network Error"));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function handleCVUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -93,29 +105,28 @@ export default function Home() {
         >
           {loading ? "Analyzing..." : "Analyze Match"}
         </button>
-        {result && (
+        {err && (
+          <div className="mt-8 bg-red-100 rounded-xl p-6 border border-red-300">
+            <p className="text-red-600 text-center text-lg font-semibold">{err}</p>
+          </div>
+        )}
+        {res && (
           <div className="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
-            {result.error ? (
-              <p className="text-red-600 text-center text-lg font-semibold">{result.error}</p>
-            ) : (
-              <>
-                <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">Match Results</h2>
-                <div className="flex flex-col md:flex-row gap-6 justify-center">
-                  <div className="flex-1">
-                    <div className="font-semibold mb-1">Score</div>
-                    <div className="text-2xl text-blue-700 font-bold">{result.score}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold mb-1">Matches</div>
-                    <div className="text-green-700">{result.matches?.join(", ") || "None"}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold mb-1">Gaps</div>
-                    <div className="text-red-700">{result.gaps?.join(", ") || "None"}</div>
-                  </div>
-                </div>
-              </>
-            )}
+            <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">Match Results</h2>
+            <div className="flex flex-col md:flex-row gap-6 justify-center">
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Score</div>
+                <div className="text-2xl text-blue-700 font-bold">{res.score}</div>
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Matches</div>
+                <div className="text-green-700">{res.matches?.join(", ") || "None"}</div>
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Gaps</div>
+                <div className="text-red-700">{res.gaps?.join(", ") || "None"}</div>
+              </div>
+            </div>
           </div>
         )}
       </div>

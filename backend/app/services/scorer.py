@@ -1,43 +1,39 @@
-"""
-Scorer service for CV/JD matching with explainable output.
-Cosine similarity of mean pooled embeddings, TF-IDF n-gram matches, JD gaps.
-"""
-from typing import List, Dict
+from __future__ import annotations
+from typing import Dict, List, Tuple
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from collections import Counter
-import numpy as np
 import re
-from .embeddings import get_embedding
 
-WEIGHTS = {"skills": 0.5, "responsibilities": 0.3, "tools": 0.2}
+def _tfidf(a: str, b: str) -> Tuple[float, List[str]]:
+    vec = TfidfVectorizer(ngram_range=(1, 2), stop_words="english")
+    X = vec.fit_transform([a, b])
+    score = float(cosine_similarity(X[0], X[1])[0][0])
+    contrib = (X[0].multiply(X[1])).toarray()[0]
+    items = sorted(zip(vec.get_feature_names_out(), contrib), key=lambda x: x[1], reverse=True)
+    matches = [t for t, w in items[:10] if w > 0]
+    return score, matches
 
-STOPWORDS = set(TfidfVectorizer(stop_words='english').get_stop_words())
+_STOP = {"and","the","for","with","you","your","our","are","will","have","has","this","that","from","into","work","team","role","job","skills","experience","years","ability","required","preferred"}
+_WORD = re.compile(r"[A-Za-z][A-Za-z0-9\-\+\.]{3,}")
 
-def mean_pool(emb: List[float]) -> np.ndarray:
-    return np.array(emb)
+def _gaps(cv: str, jd: str, k: int = 10) -> List[str]:
+    jd_tokens = [w.lower() for w in _WORD.findall(jd)]
+    cv_set = set(w.lower() for w in _WORD.findall(cv))
+    seen, out = set(), []
+    for w in jd_tokens:
+        if w not in _STOP and w not in cv_set and w not in seen:
+            out.append(w); seen.add(w)
+            if len(out) >= k: break
+    return out
 
-def score_pair(cv_text: str, jd_text: str) -> Dict:
-    cv_emb = mean_pool(get_embedding(cv_text))
-    jd_emb = mean_pool(get_embedding(jd_text))
-    score = float(cosine_similarity([cv_emb], [jd_emb])[0][0])
-
-    try:
-        vectorizer = TfidfVectorizer(ngram_range=(1,2), stop_words='english')
-        tfidf = vectorizer.fit_transform([cv_text, jd_text])
-        jd_ngrams = vectorizer.get_feature_names_out()
-        jd_vec = tfidf[1].toarray()[0]
-        cv_vec = tfidf[0].toarray()[0]
-        products = jd_vec * cv_vec
-        top_idx = np.argsort(products)[::-1][:10]
-        matches = [jd_ngrams[i] for i in top_idx if products[i] > 0]
-    except ValueError:
-        matches = []
-
-    # Gaps: JD keywords not in CV
-    jd_tokens = [w for w in re.findall(r"\w+", jd_text.lower()) if w not in STOPWORDS and len(w) >= 4]
-    cv_tokens = set(re.findall(r"\w+", cv_text.lower()))
-    gaps = [w for w, _ in Counter(jd_tokens).most_common() if w not in cv_tokens][:10]
+def score_pair(cv: str, jd: str) -> Dict:
+    score, matches = _tfidf(cv, jd)
+    return {
+        "score": round(max(0.0, min(1.0, score)), 4),
+        "matches": matches,
+        "gaps": _gaps(cv, jd, 10),
+        "weights": {"skills": 0.5, "responsibilities": 0.3, "tools": 0.2},
+    }
 
     return {
         "score": score,
