@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
-import { PDFDocument } from "pdf-lib";
+// PDF parsing in browser is limited; fallback to manual paste
 
 const API = process.env.NEXT_PUBLIC_API_URL!; // set on Vercel
 
@@ -19,24 +19,11 @@ export default function Home() {
     setLoading(false);
   }
 
-  async function handleCVUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCVUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setCvFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const typedArray = new Uint8Array(ev.target?.result as ArrayBuffer);
-      try {
-        const pdfDoc = await PDFDocument.load(typedArray);
-        const text = (await Promise.all(
-          pdfDoc.getPages().map(page => page.getTextContent())
-        )).map(tc => tc.items.map(i => (i as any).str).join(" ")).join("\n");
-        setCv(text);
-      } catch {
-        setCv("Failed to parse PDF. Please paste text manually.");
-      }
-    };
-    reader.readAsArrayBuffer(file);
+    setCv("PDF parsing is not supported in browser demo. Please paste CV text manually.");
   }
 
   return (
@@ -55,6 +42,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">CV (PDF or Text)</label>
+            <div className="text-xs text-gray-500 mb-2">PDF upload is for recruiter demo only. Browser cannot extract text—please paste CV text below.</div>
             <div className="flex gap-2 items-center mb-2">
               <input
                 type="file"
