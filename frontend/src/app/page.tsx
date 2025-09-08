@@ -14,8 +14,22 @@ export default function Home() {
 
   async function analyze() {
     setLoading(true);
-    const r = await axios.post(`${API}/score`, { cv_text: cv, jd_text: jd });
-    setResult(r.data);
+    setResult(null);
+    try {
+      const r = await axios.post(`${API}/score`, { cv_text: cv, jd_text: jd });
+      setResult(r.data);
+    } catch (err: any) {
+      let errorMsg = "Unknown error occurred.";
+      if (err.response) {
+        errorMsg = `API Error: ${err.response.status} ${err.response.statusText}`;
+        if (err.response.data && err.response.data.detail) {
+          errorMsg += `\n${err.response.data.detail}`;
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      setResult({ error: errorMsg });
+    }
     setLoading(false);
   }
 
@@ -39,6 +53,9 @@ export default function Home() {
         </p>
       </div>
       <div className="max-w-2xl w-full bg-white shadow-2xl rounded-2xl p-10 border border-blue-100">
+        <div className="mb-4 text-xs text-gray-500 text-right">
+          <span className="font-mono bg-blue-50 px-2 py-1 rounded">API: {API}</span>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">CV (PDF or Text)</label>
@@ -102,8 +119,12 @@ export default function Home() {
           </div>
         )}
       </div>
-      <footer className="mt-10 text-gray-400 text-xs text-center">
-        &copy; {new Date().getFullYear()} JobMateAI. Built for job seekers & recruiters.
+      <footer className="mt-10 text-center text-sm text-muted">
+        <p>© {new Date().getFullYear()} JobMateAI. Built by <span className="font-medium text-foreground">Giuseppe</span> for job seekers & recruiters.</p>
+        <div className="mt-2 flex justify-center gap-4">
+          <a href="https://github.com/Giuseppe552" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">GitHub</a>
+          <a href="https://www.linkedin.com/in/Giuseppe552" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">LinkedIn</a>
+        </div>
       </footer>
     </main>
   );
