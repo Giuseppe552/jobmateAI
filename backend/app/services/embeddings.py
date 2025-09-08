@@ -1,43 +1,29 @@
-"""
-Embeddings service with disk cache and LRU in-memory cache.
-Loads sentence-transformers model from settings.EMBEDDING_MODEL.
-"""
-from typing import List
-from sentence_transformers import SentenceTransformer
-from fastapi import HTTPException
-from functools import lru_cache
-from ..utils.config import load_settings
-from ..utils.cache import get, put, sha256
-import pickle
 
-settings = load_settings()
-MODEL_NAME = settings.EMBEDDING_MODEL
+# Lazy loading for sentence-transformers model
+from __future__ import annotations
+import os
+from functools import lru_cache
+from typing import List
 
 _model = None
 
-def get_model():
+def _get_model():
     global _model
     if _model is None:
-        try:
-            _model = SentenceTransformer(MODEL_NAME)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Embedding model load failed: {e}")
+        from sentence_transformers import SentenceTransformer
+        model_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        _model = SentenceTransformer(model_name)
     return _model
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=2048)
 def get_embedding(text: str) -> List[float]:
-    key = sha256(text + MODEL_NAME)
-    cached = get(key)
-    if cached:
-        return pickle.loads(cached)
-    model = get_model()
-    emb = model.encode([text])[0].tolist()
-    put(key, pickle.dumps(emb))
-    return emb
+    model = _get_model()
+    emb = model.encode([text], normalize_embeddings=True)
+    return emb[0].tolist()
 
 def embed_many(texts: List[str]) -> List[List[float]]:
-    model = get_model()
-    results = []
+    model = _get_model()
+    return model.encode(texts, normalize_embeddings=True).tolist()
     for text in texts:
         key = sha256(text + MODEL_NAME)
         cached = get(key)
