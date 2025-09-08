@@ -10,6 +10,11 @@
 
 ---
 
+👉 **Live Demo:**  
+- Frontend: [jobmate-ai.vercel.app](https://jobmate-ai.vercel.app)  
+- Backend: [jobmateai-api.onrender.com/health](https://jobmateai-api.onrender.com/health)
+
+
 > **JobMateAI** is a modern, explainable AI platform for matching CVs to job descriptions, built for recruiters and candidates. Designed for speed, transparency, and demo simplicity—no databases, no paid APIs, no authentication.
 
 ---
