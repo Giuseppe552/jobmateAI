@@ -113,3 +113,5 @@ Response:
 ## 📬 Contact
 
 For questions, feedback, or collaboration, reach out via [GitHub Issues](https://github.com/Giuseppe552/jobmateAI/issues).
+
+Or email: contact.giuseppe00@gmail.com
