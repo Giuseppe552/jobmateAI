@@ -1,3 +1,8 @@
+@api.get("/")
+def root():
+    return {
+        "message": "🚀 JobMateAI: The open-source, explainable CV-to-JD matcher. Built for recruiters, candidates, and job applicants. See /health, /score, /rewrite endpoints."
+    }
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.models import MatchRequest
@@ -13,6 +18,7 @@ setup_logging()
 logger = get_logger()
 request_id_ctx = contextvars.ContextVar("request_id", default=None)
 
+
 api = FastAPI(title="JobMate AI", version="2.0")
 settings = load_settings()
 api.add_middleware(RateLimiterMiddleware, rate=settings.RATE_LIMIT_PER_MIN)
@@ -23,6 +29,12 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@api.get("/")
+def root():
+    return {
+        "message": "🚀 JobMateAI: The open-source, explainable CV-to-JD matcher. Built for recruiters, candidates, and hackers. See /health, /score, /rewrite endpoints."
+    }
 
 @api.middleware("http")
 async def add_request_id(request: Request, call_next):
