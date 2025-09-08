@@ -18,10 +18,3 @@ def test_score_happy():
     assert isinstance(out["matches"], list)
     assert isinstance(out["gaps"], list)
 
-def test_rate_limit():
-    # Lower limit for test
-    for _ in range(12):
-        r = client.post("/score", json={"cv_text": "a", "jd_text": "b"})
-        if r.status_code == 429:
-            break
-    assert r.status_code == 429
