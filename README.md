@@ -1,5 +1,5 @@
 
- <img src="screenshot.png" alt="JobMateAI demo image" width="80%">
+ <img src="screenshot.png" alt="JobMateAI demo image" width="60%">
 
 # JobMateAI
 
