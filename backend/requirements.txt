@@ -6,3 +6,4 @@ scikit-learn
 structlog
 pytest
 httpx
+pydantic-settings
