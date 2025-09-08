@@ -11,7 +11,7 @@
 ---
 
 👉 **Live Demo:**  
-- Frontend: [jobmate-ai.vercel.app](https://jobmate-ai.vercel.app)  
+- Frontend: [jobmate-ai.vercel.app](https://jobmate-ai-six.vercel.app/)
 - Backend: [jobmateai-api.onrender.com/health](https://jobmateai-api.onrender.com/health)
 
 
