@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.services.scorer import score_pair
 
-api = FastAPI(title="JobMate AI", version="2.0")
+app = FastAPI(title="JobMate AI", version="2.0")
 
-api.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
@@ -16,11 +16,11 @@ class MatchRequest(BaseModel):
     cv_text: str
     jd_text: str
 
-@api.get("/health")
+@app.get("/health")
 def health():
     return {"ok": True}
 
-@api.post("/score")
+@app.post("/score")
 def score(req: MatchRequest):
     try:
         return score_pair(req.cv_text, req.jd_text)

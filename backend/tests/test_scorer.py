@@ -10,7 +10,7 @@ def test_score_pair_similarity():
 
 def test_score_pair_matches_gaps():
     cv = "Python pandas AWS"
-    jd = "Python AWS experience"
+    jd = "Python AWS experience cloud"
     out = score_pair(cv, jd)
     assert len(out["matches"]) > 0
-    assert len(out["gaps"]) > 0
+    assert len(out["gaps"]) > 0  # 'cloud' should be a gap
